@@ -1,6 +1,6 @@
-import { HttpException, Injectable } from '@nestjs/common';
+import { HttpException, Injectable, Param } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { DeleteResult, Repository } from 'typeorm';
 import { User } from './user.entity';
 
 @Injectable()
@@ -10,7 +10,8 @@ export class UserService {
     private usersRepository: Repository<User>,
   ) {}
 
-  async create({ name, email }): Promise<void> {
+  // 创建
+  async create({ name, email }): Promise<User> {
     if (!name) {
       throw new HttpException('没有用户名', 401);
     }
@@ -18,31 +19,48 @@ export class UserService {
       throw new HttpException('没有邮箱', 401);
     }
     const newUser = await this.usersRepository.save({ name, email });
-    console.log('newUser', newUser);
+    return newUser;
   }
 
-  // 查询数据库所有user，返回值类型是User[]
-  findAll(): Promise<User[]> {
-    return this.usersRepository.find();
+  // 查询(全部)
+  async queryAll(): Promise<User[]> {
+    return await this.usersRepository.find();
   }
 
-  // 查询数据库单个user，传参是id，返回值是单个User
-  findById(id: number): Promise<User> {
-    return this.usersRepository.findOneBy({ id });
+  // 查询(单个)
+  async findById(id: number): Promise<User> {
+    if (!id) {
+      throw new HttpException('请传递正确的id', 401);
+    }
+    const user = await this.usersRepository.findOneBy({ id });
+    if (user) {
+      return user;
+    } else {
+      throw new HttpException('没有对应id的用户', 401);
+    }
   }
 
-  // 删除单个user，传参是id，返回值是void
-  async remove(id: number): Promise<void> {
-    await this.usersRepository.delete(id);
-  }
-
-  // 修改单个user的信息
-  async update(id: any, user: any): Promise<User> {
+  // 删除
+  async remove(id: number): Promise<DeleteResult> {
     const existUser = await this.usersRepository.findOneBy({ id });
     if (!existUser) {
       throw new HttpException(`id为${id}的用户不存在`, 401);
     }
-    const updateUser = this.usersRepository.merge(existUser, user);
+    return await this.usersRepository.delete(id);
+  }
+
+  // 更新(单个)
+  async update(user: User): Promise<any> {
+    const { id, name, email } = user;
+    if (!id) {
+      throw new HttpException('缺少id!', 401);
+    }
+    const existUser = await this.usersRepository.findOneBy({ id });
+    if (!existUser) {
+      throw new HttpException(`id为${id}的用户不存在`, 401);
+    }
+    const updateObject = Object.assign({}, { name, email });
+    const updateUser = this.usersRepository.merge(existUser, updateObject);
     return this.usersRepository.save(updateUser);
   }
 }

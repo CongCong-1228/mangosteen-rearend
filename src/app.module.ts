@@ -22,7 +22,7 @@ import { User } from './user/user.entity';
       database: 'mangosteen',
       entities: [User],
       synchronize: true,
-      autoLoadEntities: true,
+      // autoLoadEntities: true,
     }),
   ],
   controllers: [AppController, UserController],
