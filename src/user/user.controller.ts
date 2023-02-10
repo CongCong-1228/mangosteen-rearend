@@ -29,4 +29,9 @@ export class UserController {
   queryAll() {
     return this.userService.queryAll();
   }
+
+  @Post('emailCode')
+  getEmailCode(@Body('email') email) {
+    return this.userService.getEmailCode(email);
+  }
 }
