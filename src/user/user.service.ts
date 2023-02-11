@@ -1,10 +1,9 @@
+import { randomCodeFunc } from './../utils/randomCode';
 import { HttpException, Injectable, Param } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
 import { User } from './user.entity';
 import { createTransport, getTestMessageUrl } from 'nodemailer';
-
-import { randomCodeFunc } from '../utils/randomCode';
 
 @Injectable()
 export class UserService {
@@ -15,6 +14,8 @@ export class UserService {
 
   // 创建
   async create({ name, email }): Promise<User> {
+    console.log('name', name);
+    console.log('email', email);
     if (!name) {
       throw new HttpException('没有用户名', 401);
     }
@@ -53,7 +54,7 @@ export class UserService {
   }
 
   // 更新(单个)
-  async update(user: User): Promise<any> {
+  async update(user: any): Promise<any> {
     const { id, name, email } = user;
     if (!id) {
       throw new HttpException('缺少id!', 401);
@@ -84,15 +85,16 @@ export class UserService {
         pass: 'OSLTSJKBGVJQWMMC', // generated ethereal password
       },
     });
+    const randomCode = randomCodeFunc();
 
     const info = await transporter.sendMail({
       from: 'fivesun1228@163.com', // sender address
       to: email, // list of receivers
       subject: '验证码', // Subject line
-      html: `<h2>你好你的验证码是</h2><h1>${randomCodeFunc()}</h1>`, // html body
+      html: `<h2>你好你的验证码是</h2><h1>${randomCode}</h1>`, // html body
     });
     console.log('Message sent: %s', info);
-    console.log('randomCodeFunc()', randomCodeFunc());
+    console.log('randomCodeFunc()', randomCode);
     console.log('Preview URL: %s', getTestMessageUrl(info));
   }
 }

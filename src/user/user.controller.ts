@@ -1,37 +1,60 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { UserService } from './user.service';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiProperty,
+  ApiTags,
+} from '@nestjs/swagger';
+import {
+  createUserDto,
+  queryUserDto,
+  sendEmailDto,
+  updateUserDto,
+} from './userApiDto';
 
+// 添加标签
+@ApiBearerAuth()
+@ApiTags('用户')
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
   @Post('create')
-  async create(@Body('name') name, @Body('email') email) {
-    return await this.userService.create({ name, email });
+  // 描述
+  @ApiOperation({ summary: '创建用户' })
+  async create(@Body() body: createUserDto) {
+    return await this.userService.create({ ...body });
   }
 
   @Post('query')
-  query(@Body('id') id) {
-    return this.userService.findById(Number(id));
+  @ApiOperation({ summary: '查询单个用户' })
+  @ApiProperty()
+  query(@Body() body: queryUserDto) {
+    return this.userService.findById(Number(body.id));
   }
 
   @Post('update')
-  update(@Body() body) {
+  @ApiOperation({ summary: '更新用户信息' })
+  update(@Body() body: updateUserDto) {
     return this.userService.update(body);
   }
 
   @Post('delete')
-  delete(@Body('id') id) {
-    return this.userService.remove(Number(id));
+  @ApiOperation({ summary: '删除用户' })
+  delete(@Body() body: queryUserDto) {
+    return this.userService.remove(Number(body.id));
   }
 
   @Post('queryAll')
+  @ApiOperation({ summary: '查询所有用户' })
   queryAll() {
     return this.userService.queryAll();
   }
 
   @Post('emailCode')
-  getEmailCode(@Body('email') email) {
-    return this.userService.getEmailCode(email);
+  @ApiOperation({ summary: '发送邮箱验证码' })
+  getEmailCode(@Body() body: sendEmailDto) {
+    return this.userService.getEmailCode(body.email);
   }
 }
