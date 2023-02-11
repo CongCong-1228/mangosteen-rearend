@@ -6,6 +6,7 @@ import { UserController } from './user/user.controller';
 import { UserModule } from './user/user.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from './user/user.entity';
+import { ValidateCode } from './user/validationCode.entity';
 
 // 使用typeOrm连接数据库
 
@@ -20,7 +21,7 @@ import { User } from './user/user.entity';
       username: 'root',
       password: '123456',
       database: 'mangosteen',
-      entities: [User],
+      entities: [User, ValidateCode],
       synchronize: true,
       // autoLoadEntities: true,
     }),

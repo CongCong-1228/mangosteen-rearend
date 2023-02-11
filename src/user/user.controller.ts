@@ -52,7 +52,7 @@ export class UserController {
     return this.userService.queryAll();
   }
 
-  @Post('emailCode')
+  @Post('validateCode')
   @ApiOperation({ summary: '发送邮箱验证码' })
   getEmailCode(@Body() body: sendEmailDto) {
     return this.userService.getEmailCode(body.email);

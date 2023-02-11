@@ -1,21 +1,23 @@
+import { ValidateCode } from './validationCode.entity';
 import { randomCodeFunc } from './../utils/randomCode';
 import { HttpException, Injectable, Param } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
 import { User } from './user.entity';
 import { createTransport, getTestMessageUrl } from 'nodemailer';
+import { assert } from 'node:console';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
+    @InjectRepository(ValidateCode)
+    private validateCodeRepository: Repository<ValidateCode>,
   ) {}
 
   // 创建
   async create({ name, email }): Promise<User> {
-    console.log('name', name);
-    console.log('email', email);
     if (!name) {
       throw new HttpException('没有用户名', 401);
     }
@@ -87,14 +89,32 @@ export class UserService {
     });
     const randomCode = randomCodeFunc();
 
-    const info = await transporter.sendMail({
-      from: 'fivesun1228@163.com', // sender address
-      to: email, // list of receivers
-      subject: '验证码', // Subject line
-      html: `<h2>你好你的验证码是</h2><h1>${randomCode}</h1>`, // html body
+    const info = await transporter.sendMail(
+      {
+        from: 'fivesun1228@163.com', // sender address
+        to: email, // list of receivers
+        subject: '验证码', // Subject line
+        html: `<p>你好！</p>
+      <p>您正在注册山竹记账</p>
+      <p>你的验证码是：<strong style="color: #ff4e2a;">${randomCode}</strong></p>
+      <p>***该验证码5分钟内有效***</p>`, // html 内容`, // html body
+      },
+      function (error) {
+        assert(!error, 500, '发送验证码错误！');
+        transporter.close(); // 如果没用，关闭连接池
+      },
+    );
+    const existCode = await this.validateCodeRepository.findAndCountBy({
+      email,
+      kind: 'login',
     });
-    console.log('Message sent: %s', info);
-    console.log('randomCodeFunc()', randomCode);
-    console.log('Preview URL: %s', getTestMessageUrl(info));
+
+    console.log('existCode=====>', existCode[0][existCode[1] - 1]);
+    const validateCode = await this.validateCodeRepository.save({
+      code: randomCode,
+      email,
+      kind: 'login',
+    });
+    console.log('validateCode', validateCode);
   }
 }
