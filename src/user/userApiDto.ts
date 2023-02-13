@@ -30,4 +30,7 @@ export class updateUserDto {
 export class sendEmailDto {
   @ApiProperty({ default: '819745585@qq.com' })
   email: string;
+
+  @ApiProperty({ default: '孙聪' })
+  name: string;
 }

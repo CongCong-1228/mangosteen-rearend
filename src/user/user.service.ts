@@ -1,6 +1,11 @@
 import { ValidateCode } from './validationCode.entity';
 import { randomCodeFunc } from './../utils/randomCode';
-import { HttpException, Injectable, Param } from '@nestjs/common';
+import {
+  HttpException,
+  Injectable,
+  NotFoundException,
+  Param,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
 import { User } from './user.entity';
@@ -20,15 +25,29 @@ export class UserService {
   ) {}
 
   // 创建
-  async create({ name, email }): Promise<User> {
+  async create({ name, email }): Promise<any> {
     if (!name) {
       throw new HttpException('没有用户名', 401);
     }
     if (!email) {
       throw new HttpException('没有邮箱', 401);
     }
-    const newUser = await this.usersRepository.save({ name, email });
-    return newUser;
+    const existEmail = await this.validateCodeRepository.findOneBy({ email });
+    console.log('existEmail', existEmail);
+    // 说明就没收验证码在登录
+    if (existEmail.used_at === null) {
+      throw new HttpException('不能登录', 404);
+    } else {
+      const existUser = await this.usersRepository.findOneBy({ email });
+      console.log('we', existUser);
+      if (!existUser) {
+        throw new NotFoundException('该用户不存在');
+      } else {
+        return { jwt: 'xxxxx' };
+      }
+
+      // throw new HttpException('该用户不存在', 404);
+    }
   }
 
   // 查询(全部)
@@ -73,7 +92,7 @@ export class UserService {
     return this.usersRepository.save(updateUser);
   }
 
-  async getEmailCode(email: string): Promise<void> {
+  async getEmailCode(email: string, name: string): Promise<void> {
     // 邮箱正则
     const regEmail =
       /^([a-zA-Z0-9]+[_|_|.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|_|.]?)*[a-zA-Z0-9]+.[a-zA-Z]{2,3}$/;
@@ -92,7 +111,7 @@ export class UserService {
     });
     const randomCode = randomCodeFunc();
 
-    const info = await transporter.sendMail(
+    await transporter.sendMail(
       {
         from: 'fivesun1228@163.com', // sender address
         to: email, // list of receivers
@@ -111,7 +130,6 @@ export class UserService {
       email,
       kind: 'login',
     });
-    console.log('existCode', existCode);
     if (existCode[1] !== 0) {
       const lastDate = existCode[0][existCode[1] - 1].create_time;
       const lastTimestamp = moment(lastDate).valueOf();
@@ -123,14 +141,19 @@ export class UserService {
           code: randomCode,
           email,
           kind: 'login',
+          used_at: 'used',
         });
+        await this.usersRepository.save({ name, email });
       }
     } else {
       await this.validateCodeRepository.save({
         code: randomCode,
         email,
         kind: 'login',
+        used_at: 'used',
       });
+      await this.usersRepository.save({ name, email });
+      await this.create({ name, email });
     }
   }
 }

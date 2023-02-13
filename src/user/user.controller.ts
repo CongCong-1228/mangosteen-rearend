@@ -55,6 +55,6 @@ export class UserController {
   @Post('validateCode')
   @ApiOperation({ summary: '发送邮箱验证码' })
   getEmailCode(@Body() body: sendEmailDto) {
-    return this.userService.getEmailCode(body.email);
+    return this.userService.getEmailCode(body.email, body.name);
   }
 }

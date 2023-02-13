@@ -1,11 +1,5 @@
 /* eslint-disable prettier/prettier */
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('validateCode')
 export class ValidateCode {
@@ -17,6 +11,9 @@ export class ValidateCode {
 
   @Column()
   kind: string;
+
+  @Column({ default: null })
+  used_at: string;
 
   @Column()
   email: string;
