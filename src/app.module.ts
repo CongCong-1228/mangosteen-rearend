@@ -24,6 +24,7 @@ import { ValidateCode } from './user/validationCode.entity';
       entities: [User, ValidateCode],
       synchronize: true,
       // autoLoadEntities: true,
+      timezone: 'Z', // timezone默认用的是UTC的，需要设置成自己的时区 I fixed it by setting timezone to 'Z' in the connection options (the default is 'local').
     }),
   ],
   controllers: [AppController, UserController],

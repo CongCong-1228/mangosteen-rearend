@@ -5,8 +5,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
 import { User } from './user.entity';
 import { createTransport, getTestMessageUrl } from 'nodemailer';
-import { assert } from 'node:console';
+import { assert, time } from 'node:console';
+import * as moment from 'moment';
+import 'moment-timezone';
 
+moment.tz.setDefault('Asia/Shanghai');
 @Injectable()
 export class UserService {
   constructor(
@@ -108,13 +111,26 @@ export class UserService {
       email,
       kind: 'login',
     });
-
-    console.log('existCode=====>', existCode[0][existCode[1] - 1]);
-    const validateCode = await this.validateCodeRepository.save({
-      code: randomCode,
-      email,
-      kind: 'login',
-    });
-    console.log('validateCode', validateCode);
+    console.log('existCode', existCode);
+    if (existCode[1] !== 0) {
+      const lastDate = existCode[0][existCode[1] - 1].create_time;
+      const lastTimestamp = moment(lastDate).valueOf();
+      const nowTimestamp = moment().utc().hour(16).valueOf();
+      if (Math.abs(lastTimestamp - nowTimestamp) < 60000) {
+        throw new HttpException('不要频繁发送验证码', 401);
+      } else {
+        await this.validateCodeRepository.save({
+          code: randomCode,
+          email,
+          kind: 'login',
+        });
+      }
+    } else {
+      await this.validateCodeRepository.save({
+        code: randomCode,
+        email,
+        kind: 'login',
+      });
+    }
   }
 }
