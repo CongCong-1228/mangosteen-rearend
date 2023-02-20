@@ -1,27 +1,31 @@
+import { JwtService } from '@nestjs/jwt';
 import { ValidateCode } from './validationCode.entity';
 import { randomCodeFunc } from './../utils/randomCode';
 import {
   HttpException,
+  Inject,
   Injectable,
   NotFoundException,
-  Param,
+  forwardRef,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { DeleteResult, Repository } from 'typeorm';
 import { User } from './user.entity';
-import { createTransport, getTestMessageUrl } from 'nodemailer';
-import { assert, time } from 'node:console';
+import { createTransport } from 'nodemailer';
+import { assert } from 'node:console';
 import * as moment from 'moment';
 import 'moment-timezone';
+import { AuthService } from 'src/auth/auth.service';
 
 moment.tz.setDefault('Asia/Shanghai');
 @Injectable()
 export class UserService {
   constructor(
+    @Inject(forwardRef(() => AuthService)) private authService: AuthService,
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     @InjectRepository(ValidateCode)
-    private validateCodeRepository: Repository<ValidateCode>,
+    private validateCodeRepository: Repository<ValidateCode>, // private authService: AuthService,
   ) {}
 
   // 创建
@@ -33,20 +37,16 @@ export class UserService {
       throw new HttpException('没有邮箱', 401);
     }
     const existEmail = await this.validateCodeRepository.findOneBy({ email });
-    console.log('existEmail', existEmail);
     // 说明就没收验证码在登录
     if (existEmail.used_at === null) {
       throw new HttpException('不能登录', 404);
     } else {
       const existUser = await this.usersRepository.findOneBy({ email });
-      console.log('we', existUser);
       if (!existUser) {
         throw new NotFoundException('该用户不存在');
       } else {
-        return { jwt: 'xxxxx' };
+        return this.authService.login(existUser);
       }
-
-      // throw new HttpException('该用户不存在', 404);
     }
   }
 
@@ -68,6 +68,10 @@ export class UserService {
     }
   }
 
+  // 查询(名字)
+  async findOne(name: string, email: string): Promise<User | undefined> {
+    return this.usersRepository.findOneBy({ name, email });
+  }
   // 删除
   async remove(id: number): Promise<DeleteResult> {
     const existUser = await this.usersRepository.findOneBy({ id });

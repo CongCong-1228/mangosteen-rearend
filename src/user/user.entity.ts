@@ -12,6 +12,9 @@ export class User {
   @Column()
   email: string;
 
+  @Column({ default: '' })
+  token: string;
+
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   create_time: Date;
 

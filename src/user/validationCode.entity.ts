@@ -15,6 +15,9 @@ export class ValidateCode {
   @Column({ default: null })
   used_at: string;
 
+  @Column({ default: '' })
+  token: string;
+
   @Column()
   email: string;
 
