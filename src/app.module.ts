@@ -1,4 +1,3 @@
-import { AuthController } from './auth/auth.controller';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from './user/user.service';
 import { Module } from '@nestjs/common';
@@ -11,6 +10,7 @@ import { User } from './user/user.entity';
 import { ValidateCode } from './user/validationCode.entity';
 import { AuthService } from 'src/auth/auth.service';
 import { AuthModule } from 'src/auth/auth.module';
+import { LoginModule } from './login/login.module';
 
 // 使用typeOrm连接数据库
 
@@ -30,8 +30,9 @@ import { AuthModule } from 'src/auth/auth.module';
       // autoLoadEntities: true,
       timezone: 'Z', // timezone默认用的是UTC的，需要设置成自己的时区 I fixed it by setting timezone to 'Z' in the connection options (the default is 'local').
     }),
+    LoginModule,
   ],
-  controllers: [AppController, UserController, AuthController],
+  controllers: [AppController, UserController],
   providers: [AppService, UserService, AuthService],
 })
 export class AppModule {}

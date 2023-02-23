@@ -69,8 +69,8 @@ export class UserService {
   }
 
   // 查询(名字)
-  async findOne(name: string, email: string): Promise<User | undefined> {
-    return this.usersRepository.findOneBy({ name, email });
+  async findOne(email: string): Promise<User | undefined> {
+    return this.usersRepository.findOneBy({ email });
   }
   // 删除
   async remove(id: number): Promise<DeleteResult> {
