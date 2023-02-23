@@ -32,7 +32,7 @@ export class LoginController {
 
   // 关联受限的路由，这个路由需要jwt才能访问
 
-  //   @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard)
   @Post('profile')
   getProfile(@Body() body) {
     return { ...body };
