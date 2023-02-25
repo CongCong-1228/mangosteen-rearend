@@ -1,4 +1,3 @@
-import { JwtService } from '@nestjs/jwt';
 import { ValidateCode } from './validationCode.entity';
 import { randomCodeFunc } from './../utils/randomCode';
 import {
@@ -21,7 +20,7 @@ moment.tz.setDefault('Asia/Shanghai');
 @Injectable()
 export class UserService {
   constructor(
-    @Inject(forwardRef(() => AuthService)) private authService: AuthService,
+    private authService: AuthService,
     @InjectRepository(User)
     private usersRepository: Repository<User>,
     @InjectRepository(ValidateCode)
@@ -29,7 +28,7 @@ export class UserService {
   ) {}
 
   // 创建
-  async create({ name, email }): Promise<any> {
+  async login({ name, email }): Promise<any> {
     if (!name) {
       throw new HttpException('没有用户名', 401);
     }
@@ -41,6 +40,7 @@ export class UserService {
     if (existEmail.used_at === null) {
       throw new HttpException('不能登录', 404);
     } else {
+      console.log('111');
       const existUser = await this.usersRepository.findOneBy({ email });
       if (!existUser) {
         throw new NotFoundException('该用户不存在');
@@ -96,7 +96,7 @@ export class UserService {
     return this.usersRepository.save(updateUser);
   }
 
-  async getEmailCode(email: string, name: string): Promise<void> {
+  async create({ email, name }): Promise<void> {
     // 邮箱正则
     const regEmail =
       /^([a-zA-Z0-9]+[_|_|.]?)*[a-zA-Z0-9]+@([a-zA-Z0-9]+[_|_|.]?)*[a-zA-Z0-9]+.[a-zA-Z]{2,3}$/;
@@ -115,7 +115,7 @@ export class UserService {
     });
     const randomCode = randomCodeFunc();
 
-    await transporter.sendMail(
+    const sendEmail = await transporter.sendMail(
       {
         from: 'fivesun1228@163.com', // sender address
         to: email, // list of receivers
@@ -138,6 +138,8 @@ export class UserService {
       const lastDate = existCode[0][existCode[1] - 1].create_time;
       const lastTimestamp = moment(lastDate).valueOf();
       const nowTimestamp = moment().utc().hour(16).valueOf();
+      console.log('las', lastTimestamp);
+      console.log('now', nowTimestamp);
       if (Math.abs(lastTimestamp - nowTimestamp) < 60000) {
         throw new HttpException('不要频繁发送验证码', 401);
       } else {
@@ -147,7 +149,8 @@ export class UserService {
           kind: 'login',
           used_at: 'used',
         });
-        await this.usersRepository.save({ name, email });
+        const createSuccess = await this.usersRepository.save({ name, email });
+        if (createSuccess) return this.login({ name, email });
       }
     } else {
       await this.validateCodeRepository.save({
@@ -156,8 +159,8 @@ export class UserService {
         kind: 'login',
         used_at: 'used',
       });
-      await this.usersRepository.save({ name, email });
-      await this.create({ name, email });
+      const createSuccess = await this.usersRepository.save({ name, email });
+      if (createSuccess) return this.login({ name, email });
     }
   }
 }

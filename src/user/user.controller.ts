@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Post, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import {
   ApiBearerAuth,
@@ -12,6 +12,7 @@ import {
   sendEmailDto,
   updateUserDto,
 } from './userApiDto';
+import { JwtAuthGuard } from 'src/auth/jwt-auth.guard';
 
 // 添加标签
 @ApiBearerAuth()
@@ -25,6 +26,13 @@ export class UserController {
   @ApiOperation({ summary: '创建用户' })
   async create(@Body() body: createUserDto) {
     return await this.userService.create({ ...body });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post('login')
+  @ApiOperation({ summary: '用户登录' })
+  async login(@Body() body) {
+    return await this.userService.login({ ...body });
   }
 
   @Post('query')
@@ -55,6 +63,6 @@ export class UserController {
   @Post('validateCode')
   @ApiOperation({ summary: '发送邮箱验证码' })
   getEmailCode(@Body() body: sendEmailDto) {
-    return this.userService.getEmailCode(body.email, body.name);
+    return this.userService.create({ ...body });
   }
 }
