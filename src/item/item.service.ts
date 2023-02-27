@@ -48,12 +48,19 @@ export class ItemService {
   }
 
   async createItem({ name, jwt }) {
-    const success = await this.itemRepository.save({ name });
     const jwtDecode = this.jwtService.decode(
       jwt.toString().split('Bearer')[1].trim(),
     );
     console.log('jwtDecode', jwtDecode);
-    const exitUser = this.userRepository.findOneBy({ email: '111' });
+    const exitUser = await this.userRepository.findOneBy({
+      email: jwtDecode['sub'],
+    });
+    const success = await this.itemRepository.save({
+      name,
+      userId: exitUser.id,
+    });
+
+    console.log('exitUser', exitUser);
     if (success) return '创建成功';
     else throw new HttpException('创建失败', 401);
   }
@@ -63,5 +70,10 @@ export class ItemService {
     if (!exitItem) throw new HttpException('不存在', 401);
     const updateItem = this.itemRepository.merge(exitItem, { name, userId });
     return this.itemRepository.save(updateItem);
+  }
+
+  async deleteItem({ name, userId }) {
+    const exitItem = await this.itemRepository.findOneBy({ userId });
+    if (!exitItem) throw new HttpException('不存在', 401);
   }
 }

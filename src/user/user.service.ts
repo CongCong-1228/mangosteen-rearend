@@ -40,7 +40,6 @@ export class UserService {
     if (existEmail.used_at === null) {
       throw new HttpException('不能登录', 404);
     } else {
-      console.log('111');
       const existUser = await this.usersRepository.findOneBy({ email });
       if (!existUser) {
         throw new NotFoundException('该用户不存在');

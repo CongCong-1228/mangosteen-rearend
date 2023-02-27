@@ -1,20 +1,20 @@
 /* eslint-disable prettier/prettier */
 import { Item } from 'src/item/item.entity';
-import { Entity, Column, PrimaryGeneratedColumn, OneToMany } from 'typeorm';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('user')
-export class User {
+@Entity('tags')
+export class Tags {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Column({ default: undefined })
+  sign: string;
+
   @Column()
+  userId: number;
+
+  @Column({ default: undefined })
   name: string;
-
-  @Column()
-  email: string;
-
-  @Column({ default: '' })
-  token: string;
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   create_time: Date;
@@ -22,6 +22,6 @@ export class User {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   update_time: Date;
 
-  // @OneToMany(() => Item, (item) => item.userInfo)
-  // items: Item[];
+  @ManyToOne(() => Item, (item) => item.tagIds)
+  itemId: number;
 }

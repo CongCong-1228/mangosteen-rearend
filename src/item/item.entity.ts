@@ -1,5 +1,14 @@
+import { OneToMany } from 'typeorm';
 /* eslint-disable prettier/prettier */
-import { Entity, Column, PrimaryGeneratedColumn, PrimaryColumn } from 'typeorm';
+import { User } from 'src/user/user.entity';
+import {
+  Entity,
+  Column,
+  PrimaryGeneratedColumn,
+  PrimaryColumn,
+  ManyToOne,
+} from 'typeorm';
+import { Tags } from 'src/tags/tags.entity';
 
 @Entity('item')
 export class Item {
@@ -17,4 +26,10 @@ export class Item {
 
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   update_time: Date;
+
+  // @ManyToOne(() => User, (user) => user.items)
+  // userInfo: User;
+
+  @OneToMany(() => Tags, (tag) => tag.itemId)
+  tagIds: Tags[];
 }

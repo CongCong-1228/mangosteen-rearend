@@ -33,7 +33,6 @@ export class AuthService {
 
   async login(user: User) {
     const payload = { username: user.name, sub: user.email };
-    console.log('aaa');
     return {
       // 使用jwtService中的sign方法来生成jwt作为参数
       access_token: this.jwtService.sign(payload),

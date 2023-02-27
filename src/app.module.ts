@@ -15,6 +15,8 @@ import { LoginModule } from './login/login.module';
 import { ItemModule } from './item/item.module';
 import { ItemController } from './item/item.controller';
 import { Item } from './item/item.entity';
+import { TagsModule } from './tags/tags.module';
+import { Tags } from './tags/tags.entity';
 
 // 使用typeOrm连接数据库
 
@@ -30,12 +32,13 @@ import { Item } from './item/item.entity';
       username: 'root',
       password: '123456',
       database: 'mangosteen',
-      entities: [Item, User, ValidateCode],
+      entities: [Item, User, ValidateCode, Tags],
       synchronize: true,
       // autoLoadEntities: true,
       timezone: 'Z', // timezone默认用的是UTC的，需要设置成自己的时区 I fixed it by setting timezone to 'Z' in the connection options (the default is 'local').
     }),
     LoginModule,
+    TagsModule,
   ],
   controllers: [AppController, UserController, ItemController],
   providers: [AppService, UserService, AuthService],
