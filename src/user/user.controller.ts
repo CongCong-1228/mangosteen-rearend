@@ -28,7 +28,6 @@ export class UserController {
     return await this.userService.create({ ...body });
   }
 
-  @UseGuards(JwtAuthGuard)
   @Post('login')
   @ApiOperation({ summary: '用户登录' })
   async login(@Body() body) {

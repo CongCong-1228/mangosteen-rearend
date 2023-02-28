@@ -29,14 +29,19 @@ export class TagsService {
     throw new HttpException('创建失败', 401);
   }
 
-  async updateTag(name, sign, userId) {
+  async updateTag(name, sign, userId, id) {
     if (!userId) throw new HttpException('用户id不符合要求', 401);
     const qb = this.tagsRepository.createQueryBuilder('tags');
+    const userTag = await qb
+      .where('userId = :userId', { userId })
+      .andWhere('id =:id', { id })
+      .getOne();
+    if (!userTag) throw new HttpException('没有权限', 401);
     // 使用createQueryBuilder update tag
     const updateSuccess = await qb
       .update(Tags)
       .set({ name, sign })
-      .where('tags.userId = :userId', { userId })
+      .where('id = :id', { id })
       .execute();
     if (updateSuccess) return { data: '更新成功' };
     throw new HttpException('更新失败', 401);
@@ -45,6 +50,11 @@ export class TagsService {
   async deleteTag(userId, id) {
     if (!userId || !id) throw new HttpException('tag不存在', 401);
     const qb = this.tagsRepository.createQueryBuilder('tags');
+    const userTag = await qb
+      .where('userId = :userId', { userId })
+      .andWhere('id = :id', { id })
+      .getOne();
+    if (!userTag) throw new HttpException('没有权限', 401);
     const deleteSuccess = await qb
       .delete()
       .where('tags.userId = :userId', { userId })
@@ -52,5 +62,15 @@ export class TagsService {
       .execute();
     if (deleteSuccess) return { data: '删除成功' };
     throw new HttpException('删除失败', 401);
+  }
+
+  async queryOneTag(userId, id) {
+    if (!userId || !id) throw new HttpException('tag不存在', 401);
+    const qb = this.tagsRepository.createQueryBuilder('tags');
+    const userTag = await qb
+      .where('userId = :userId', { userId })
+      .andWhere('id = :id', { id })
+      .getOne();
+    return userTag;
   }
 }

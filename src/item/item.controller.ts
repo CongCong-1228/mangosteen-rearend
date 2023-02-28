@@ -9,7 +9,6 @@ import {
   forwardRef,
 } from '@nestjs/common';
 import { ItemService } from './item.service';
-import { JwtService } from '@nestjs/jwt';
 
 @Controller('item')
 export class ItemController {
@@ -26,5 +25,11 @@ export class ItemController {
   @Post('create')
   createItem(@Body() body, @Headers() headers) {
     return this.itemService.createItem({ ...body, jwt: headers.authorization });
+  }
+
+  // 统计数据
+  @Post('summary')
+  summary(@Body() body) {
+    return { data: body };
   }
 }

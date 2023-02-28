@@ -24,8 +24,8 @@ export class TagsController {
   @UseGuards(JwtAuthGuard)
   @Post('update')
   updateTag(@Body() body: Tags) {
-    const { name, sign, userId } = body;
-    return this.tagsService.updateTag(name, sign, userId);
+    const { name, sign, userId, id } = body;
+    return this.tagsService.updateTag(name, sign, userId, id);
   }
 
   @UseGuards(JwtAuthGuard)

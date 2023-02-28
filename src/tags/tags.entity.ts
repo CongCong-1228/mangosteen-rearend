@@ -22,6 +22,12 @@ export class Tags {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   update_time: Date;
 
+  @Column({ default: 0 })
+  amount: number;
+
+  @Column()
+  type: string;
+
   @ManyToOne(() => Item, (item) => item.tagIds)
   itemId: number;
 }

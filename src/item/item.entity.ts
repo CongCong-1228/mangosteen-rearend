@@ -27,9 +27,6 @@ export class Item {
   @Column({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   update_time: Date;
 
-  // @ManyToOne(() => User, (user) => user.items)
-  // userInfo: User;
-
   @OneToMany(() => Tags, (tag) => tag.itemId)
   tagIds: Tags[];
 }
